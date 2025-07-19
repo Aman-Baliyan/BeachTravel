@@ -13,6 +13,7 @@ import {
   Landmark,
   Bus,
   Bike,
+  Train,
   Banknote,
   ArrowRight,
   CheckCircle
@@ -70,48 +71,35 @@ const TravelPlan = ({ planData }) => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* To Destination */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+          {
+           planData.transport_options.to_destination.map((option, index) => (
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
             <div className="flex items-center space-x-3 mb-4">
-              {getTransportIcon(planData.transport_options.to_destination.mode)}
+              {getTransportIcon(option.mode)}
               <h4 className="font-semibold text-gray-900">To Destination</h4>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Mode:</span>
-                <span className="font-medium">{planData.transport_options.to_destination.mode}</span>
+                <span className="font-medium">{option.mode}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Duration:</span>
-                <span className="font-medium">{planData.transport_options.to_destination.estimated_time}</span>
+                <span className="font-medium">{option.estimated_time}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Cost:</span>
-                <span className="font-semibold text-green-600">{planData.transport_options.to_destination.cost}</span>
+                <span className="font-semibold text-green-600">{option.cost}</span>
               </div>
             </div>
           </div>
 
-          {/* Return */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              {getTransportIcon(planData.transport_options.return.mode)}
-              <h4 className="font-semibold text-gray-900">Return Journey</h4>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Mode:</span>
-                <span className="font-medium">{planData.transport_options.return.mode}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Duration:</span>
-                <span className="font-medium">{planData.transport_options.return.estimated_time}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Cost:</span>
-                <span className="font-semibold text-green-600">{planData.transport_options.return.cost}</span>
-              </div>
-            </div>
-          </div>
+
+           ))
+          }
+          
+
+          
         </div>
       </div>
 

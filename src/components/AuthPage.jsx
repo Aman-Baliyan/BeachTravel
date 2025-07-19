@@ -29,29 +29,29 @@ const AuthPage = ({ onLogin, onCancel }) => {
     const authHeader = 'Basic ' + btoa(username + ':' + password);
     
     if (isSignIn) {
-      onLogin(formData.email);
-      // try{
-      //   const response = await axios.post("http://localhost:8080/login", {
-      //     email: formData.email,
-      //     password: formData.password
-      // },
-      // {
-      //     headers:{
-      //         Authorization: authHeader,
-      //        'Content-Type': 'application/json'
+      // onLogin(formData.email);
+      try{
+        const response = await axios.post("http://localhost:8080/login", {
+          email: formData.email,
+          password: formData.password
+      },
+      {
+          headers:{
+              Authorization: authHeader,
+             'Content-Type': 'application/json'
 
-      //     }
-      // }
-      // );
-      //  onLogin(formData.email); 
-      // }catch(e){
-      //     if (e.response.status === 401) {
-      //         toast.error("Usename or Password is wrong");
-      //    }
-      //    else{
-      //         toast.error("Network Error");
-      //    }
-      // }
+          }
+      }
+      );
+       onLogin(formData.email); 
+      }catch(e){
+          if (e.response.status === 401) {
+              toast.error("Usename or Password is wrong");
+         }
+         else{
+              toast.error("Network Error");
+         }
+      }
     } else {
       if (formData.password !== formData.confirmPassword) {
         toast.error('Passwords do not match!');

@@ -43,9 +43,10 @@ import {
 } from 'lucide-react';
 
 import TravelPlan from './TravelPlan';
+import { TravelPlanShimmer, MapSearchShimmer } from './ShimmerUI';
 import axios from 'axios';
 
-export default function App() {
+export default function Dashboard() {
   const [selectedBeach, setSelectedBeach] = useState(null);
   const [sections, setSections] = useState(null);
   const [selectedState, setSelectedState] = useState('All States');
@@ -55,7 +56,9 @@ export default function App() {
   const [showSearchForm, setShowSearchForm] = useState(false); // For inline form toggle
   const [mapSearchQuery, setMapSearchQuery] = useState('');
   const [searchedDestination, setSearchedDestination] = useState(null);
-  const [searchData, setSearchData] = useState('')
+  const [searchData, setSearchData] = useState('');
+  const [isLoadingTravelPlan, setIsLoadingTravelPlan] = useState(false);
+  const [isLoadingMapData, setIsLoadingMapData] = useState(false);
   
   // User profile data - using mock user for now
   const user = 'amanc5922@gmail.com';
@@ -134,9 +137,7 @@ export default function App() {
   })
 
   const changeHandler = (e) => {
-    
-      // console.log("hello");
-      setFormData({
+    setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
@@ -148,7 +149,9 @@ export default function App() {
     const username = 'aman@gmail.com'; // Replace with real values
     const password = '1234';
     const authHeader = 'Basic ' + btoa(username + ':' + password);
-    console.log("Hello");              
+    
+    setIsLoadingTravelPlan(true);
+    
     try{
       const response = await axios.post("http://localhost:8080/api/generate",
         {
@@ -170,15 +173,18 @@ export default function App() {
     }catch(e){
         console.log("Error");
         toast.error("Error");
+    } finally {
+      setIsLoadingTravelPlan(false);
     }
-     
-   
   };
 
    const renderSearchTab = () => (
     <div className="space-y-8">
-      {/* Show travel plan if available */}
-      {sections && (
+      {/* Show shimmer while loading travel plan */}
+      {isLoadingTravelPlan && <TravelPlanShimmer />}
+      
+      {/* Show travel plan if available and not loading */}
+      {sections && !isLoadingTravelPlan && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900">Your Travel Plan</h2>
@@ -187,10 +193,9 @@ export default function App() {
                 setSections(null);
                 setShowSearchForm(false);
               }}
-              variant="outline"
-              className="flex items-center space-x-2"
+              className="group flex items-center space-x-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              <ArrowRight className="h-4 w-4 rotate-180" />
+              <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform duration-200" />
               <span>Plan New Trip</span>
             </button>
           </div>
@@ -198,8 +203,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Search form - only show if no travel plan is displayed */}
-      {!sections && (
+      {/* Search form - only show if no travel plan is displayed and not loading */}
+      {!sections && !isLoadingTravelPlan && (
         <>
           {/* Hero Section with Search */}
           <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white">
@@ -211,11 +216,11 @@ export default function App() {
             {!showSearchForm ? (
               <button
                 onClick={() => setShowSearchForm(true)}
-                className="w-full bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-6 hover:bg-white/30 transition-all group"
+                className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 group hover:shadow-2xl hover:shadow-white/10"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition-all duration-300">
                       <Search className="h-6 w-6" />
                     </div>
                     <div className="text-left">
@@ -223,12 +228,12 @@ export default function App() {
                       <p className="text-sm opacity-80">Search destinations, dates, and travelers</p>
                     </div>
                   </div>
-                  <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
                 </div>
               </button>
             ) : (
               <form onSubmit={generatePlanHandler}>
-                <div className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-2xl p-6">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6">
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -241,7 +246,7 @@ export default function App() {
                           value={formData.start}
                           onChange={changeHandler}
                           placeholder="Enter departure city"
-                          className="bg-white text-gray-900 border-0"
+                          className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm text-gray-900 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500 transition-all duration-200 hover:bg-white focus:bg-white"
                         />
                       </div>
                       <div>
@@ -254,7 +259,7 @@ export default function App() {
                           value={formData.end}
                           onChange={changeHandler}
                           placeholder="Enter destination"
-                          className="bg-white text-gray-900 border-0"
+                          className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm text-gray-900 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 placeholder-gray-500 transition-all duration-200 hover:bg-white focus:bg-white"
                         />
                       </div>
                     </div>
@@ -269,7 +274,7 @@ export default function App() {
                           name="startDate"
                           value={formData.startDate}
                           onChange={changeHandler}
-                          className="bg-white text-gray-900 border-0"
+                          className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm text-gray-900 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all duration-200 hover:bg-white focus:bg-white"
                         />
                       </div>
                       <div>
@@ -281,25 +286,27 @@ export default function App() {
                           name="endDate"
                           value={formData.endDate}
                           onChange={changeHandler}
-                          className="bg-white text-gray-900 border-0"
+                          className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm text-gray-900 border border-white/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all duration-200 hover:bg-white focus:bg-white"
                         />
                       </div>
                     </div>
                     
                     <div className="flex items-center justify-between pt-4">
                       <button
+                        type="button"
                         onClick={() => setShowSearchForm(false)}
-                        variant="outline"
-                        className="border-white text-white hover:bg-white hover:text-gray-900"
+                        className="group flex items-center space-x-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/30 hover:border-white/50 text-white rounded-xl font-medium transition-all duration-200 backdrop-blur-sm"
                       >
-                        ← Back to Search
+                        <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform duration-200" />
+                        <span>Back to Search</span>
                       </button>
                       <button 
-                        disabled={!formData.start || !formData.end || !formData.startDate || !formData.endDate}
+                        disabled={!formData.start || !formData.end || !formData.startDate || !formData.endDate || isLoadingTravelPlan}
                         type="submit" 
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                        className="group flex items-center space-x-2 px-8 py-3 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg"
                       >
-                        Generate Trip Plan
+                        <span>{isLoadingTravelPlan ? 'Generating...' : 'Generate Trip Plan'}</span>
+                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                       </button>
                     </div>
                   </div>
@@ -311,6 +318,7 @@ export default function App() {
       )}
     </div>
   );
+  
   const [comingData, setComingData] = useState(null);
   const FlyToOnAPICall = ({ targetCoords }) => {
   const map = useMap();
@@ -331,11 +339,8 @@ export default function App() {
     const password = '1234';
     const authHeader = 'Basic ' + btoa(username + ':' + password);
     if(searchData){
+      setIsLoadingMapData(true);
       try{
-      
-        
-        
-        
         const response = await axios.get(`http://localhost:8080/search/analyzeData/${searchData}`, 
         {
             headers:{
@@ -353,6 +358,8 @@ export default function App() {
         
       }catch(e){
         toast.error("Error fetching destination data");
+      } finally {
+        setIsLoadingMapData(false);
       }
     }
   }
@@ -361,63 +368,77 @@ export default function App() {
 
   const renderDashboardTab = () => (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <div className="relative flex gap-3">
-          <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search destinations (e.g., Goa, Kerala, Chennai...)"
-            onChange={(e) => {setSearchData(e.target.value)}}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <button onClick={apiDataForMap} className="bg-blue-600 hover:bg-blue-700 text-white">
-            Search
-          </button>
-        </div>
-      </div>
-
-      {/* Interactive Map */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Interactive Map</h2>
-          {!searchData && (
-            <p className="text-gray-600 text-sm mt-1">Enter a destination in the search bar above</p>
-          )}
-        </div>
-        
-        <div className="relative h-96 overflow-hidden">
-          <MapContainer
-              center={{ lat: 26.8333, lng: 80.95 }} // Center of India
-              zoom={5}
-              scrollWheelZoom={true}
-              className="h-full w-full"
-              
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      {/* Enhanced Search Bar */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div className="relative">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search destinations (e.g., Goa, Kerala, Chennai...)"
+                onChange={(e) => {setSearchData(e.target.value)}}
+                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white text-gray-900 placeholder-gray-500 transition-all duration-200 hover:bg-white hover:border-gray-300"
               />
-              <FlyToOnAPICall targetCoords={targetCoords} />
-                {comingData &&
-                  <Marker  position={[comingData.latitude, comingData.longitude]}>
-                  {/* <Popup>
-                    <strong>{beach.name}</strong><br />
-                    State: {beach.state}<br />
-                    Safety: {beach.safety}
-                  </Popup> */}
-                </Marker>
-                }
-            </MapContainer>
-          
+            </div>
+            <button 
+              onClick={apiDataForMap} 
+              disabled={isLoadingMapData}
+              className="group flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              <Search className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+              <span>{isLoadingMapData ? 'Searching...' : 'Search'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Destination Details (shown when searched) */}
-      {comingData && (
+      {/* Show shimmer while loading map data */}
+      {isLoadingMapData && <MapSearchShimmer />}
+
+      {/* Interactive Map - only show when not loading */}
+      {!isLoadingMapData && (
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">Interactive Map</h2>
+            {!searchData && (
+              <p className="text-gray-600 text-sm mt-1">Enter a destination in the search bar above</p>
+            )}
+          </div>
+          
+          <div className="relative h-96 overflow-hidden">
+            <MapContainer
+                center={{ lat: 26.8333, lng: 80.95 }} // Center of India
+                zoom={5}
+                scrollWheelZoom={true}
+                className="h-full w-full"
+                
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
+                <FlyToOnAPICall targetCoords={targetCoords} />
+                  {comingData &&
+                    <Marker  position={[comingData.latitude, comingData.longitude]}>
+                    <Popup>
+                      <strong>{searchData}</strong><br />
+                      {/* State: {beach.state}<br /> */}
+                      Safety: {getStatus(comingData.caution)}
+                    </Popup>
+                  </Marker>
+                  }
+              </MapContainer>
+            
+          </div>
+        </div>
+      )}
+
+      {/* Destination Details (shown when searched and not loading) */}
+      {comingData && !isLoadingMapData && (
         <div className="space-y-6">
           {/* Beach Header */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{searchData}</h2>
@@ -469,7 +490,7 @@ export default function App() {
           </div>
 
           {/* Recreational Activities */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex items-center space-x-2 mb-6">
               <Activity className="h-6 w-6 text-blue-600" />
               <h3 className="text-lg font-semibold text-gray-900">Recreational Activities</h3>
@@ -500,7 +521,7 @@ export default function App() {
   const renderProfileTab = () => (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
         <div className="flex items-center space-x-6">
           <div className="relative">
             <img
@@ -508,7 +529,7 @@ export default function App() {
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover"
             />
-            <button className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+            <button className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
               <Camera className="h-4 w-4" />
             </button>
           </div>
@@ -519,8 +540,8 @@ export default function App() {
             <p className="text-gray-500 text-sm">Member since {userProfile.joinDate}</p>
           </div>
           
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-            <Edit className="h-4 w-4" />
+          <button className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105">
+            <Edit className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
             <span>Edit Profile</span>
           </button>
         </div>
@@ -528,7 +549,7 @@ export default function App() {
 
       {/* Profile Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
+        <div className="bg-white rounded-2xl shadow-lg p-6 text-center border border-gray-100">
           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Plane className="h-6 w-6 text-blue-600" />
           </div>
@@ -536,7 +557,7 @@ export default function App() {
           <p className="text-gray-600">Total Trips</p>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
+        <div className="bg-white rounded-2xl shadow-lg p-6 text-center border border-gray-100">
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Heart className="h-6 w-6 text-red-600" />
           </div>
@@ -544,7 +565,7 @@ export default function App() {
           <p className="text-gray-600">Favorite Destinations</p>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
+        <div className="bg-white rounded-2xl shadow-lg p-6 text-center border border-gray-100">
           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Star className="h-6 w-6 text-green-600" />
           </div>
@@ -554,7 +575,7 @@ export default function App() {
       </div>
 
       {/* Profile Information */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
         <h3 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -593,7 +614,7 @@ export default function App() {
       </div>
 
       {/* Account Settings */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
         <h3 className="text-xl font-semibold text-gray-900 mb-6">Account Settings</h3>
         
         <div className="space-y-4">
